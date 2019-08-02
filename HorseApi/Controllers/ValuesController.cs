@@ -7,7 +7,6 @@ using Microsoft.Extensions.Configuration;
 namespace HorseApi.Controllers
 {
     [Route("api/values")]
-    [ApiController]
     public class ValuesController : BaseApiController
     {
         private readonly IConfiguration _configuration;

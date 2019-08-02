@@ -35,7 +35,7 @@ namespace HorseApi.Services
                 var refreshToken = _tokenService.GenerateRefreshToken();
 
                 refreshTokenField(user.ID, refreshToken);
-                response.SetResponseData(new
+                _response.SetResponseData(new
                 {
                     token = jwtToken,
                     refreshToken = refreshToken,
@@ -44,10 +44,10 @@ namespace HorseApi.Services
             }
             else
             {
-                response.SetError(1, "Fail Login");
+                _response.SetError(1, "Fail Login");
             }
 
-            return response;
+            return _response;
         }
 
         public ResponseModel RefreshToken(RefreshTokenBindingModel model)
@@ -58,8 +58,8 @@ namespace HorseApi.Services
             User user = _db.Query("Users").Where("username", username).First<User>();
             if (user == null || user.refreshToken != model.refreshToken)
             {
-                response.SetError(2, "Fail refresh token");
-                return response;
+                _response.SetError(2, "Fail refresh token");
+                return _response;
             }
 
             var generatedToken = _tokenService.GenerateAccessToken(principal.Claims, false);
@@ -68,14 +68,14 @@ namespace HorseApi.Services
 
             refreshTokenField(user.ID, refreshToken);
 
-            response.SetResponseData(new
+            _response.SetResponseData(new
             {
                 token = jwtToken,
                 refreshToken = refreshToken,
                 expire = getTokenExpireTime(generatedToken)
             });
 
-            return response;
+            return _response;
         }
 
         public ResponseModel CheckToken(string token)
@@ -86,15 +86,15 @@ namespace HorseApi.Services
             User user = _db.Query("Users").Where("username", username).First<User>();
             if (user == null)
             {
-                response.SetError(3, "Fail check token");
-                return response;
+                _response.SetError(3, "Fail check token");
+                return _response;
             }
-            response.SetResponseData(new
+            _response.SetResponseData(new
             {
                 username = user.username
             });
 
-            return response;
+            return _response;
         }
 
         public void Registration(RegistrationBindingModel model)

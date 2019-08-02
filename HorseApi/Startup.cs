@@ -10,6 +10,7 @@ using HorseApi.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using System.Security.Claims;
+using HorseApi.Helpers;
 
 namespace HorseApi
 {
@@ -25,10 +26,14 @@ namespace HorseApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddCors();
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_0);
+            services.AddMvc(options =>
+            {
+                options.Filters.Add<ExceptionActionFilter>();
+            }).SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             services.AddSignalR();
-            services.AddSingleton<IConfiguration>(provider => Configuration);
             services.AddTransient<ITokenService, TokenService>();
+            services.AddSingleton<IConfiguration>(provider => Configuration);
+
             services.AddAuthentication(options =>
             {
                 options.DefaultScheme = "bearer";

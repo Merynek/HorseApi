@@ -1,4 +1,5 @@
 ﻿using HorseApi.Models;
+using Microsoft.AspNetCore.Hosting;
 using SqlKata.Execution;
 
 namespace HorseApi.Services
@@ -6,12 +7,12 @@ namespace HorseApi.Services
     public class BaseService
     {
         protected readonly QueryFactory _db;
-        protected ResponseModel response;
+        protected ResponseModel _response;
 
         public BaseService(QueryFactory db)
         {
             this._db = db;
-            this.response = new ResponseModel();
+            this._response = new ResponseModel();
         }
     }
 }

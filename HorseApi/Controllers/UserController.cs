@@ -28,7 +28,6 @@ namespace HorseApi.Controllers
             }
 
             var response = _userService.Login(model);
-
             if (response.OK)
             {
                 return Ok(response.ResponseData);

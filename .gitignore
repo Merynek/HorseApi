@@ -24,9 +24,11 @@ build/
 bld/
 [Bb]in/
 [Oo]bj/
+Log/
 msbuild.log
 msbuild.err
 msbuild.wrn
 
 # Visual Studio 2015
 .vs/
+/HorseApi/Properties/PublishProfiles

@@ -12,10 +12,11 @@ namespace HorsiApi.Controllers
         private readonly SqlConnection _dbConnection;
 
         protected readonly QueryFactory _db;
+
         public BaseApiController(IConfiguration configuration)
         {
-            _configuration = configuration;
-            this._dbConnection = new SqlConnection(_configuration.GetConnectionString("LocalConnection"));
+            this._configuration = configuration;
+            this._dbConnection = new SqlConnection(getConnectionString());
             this._db = new QueryFactory(_dbConnection, new SqlServerCompiler());
         }
 
@@ -26,6 +27,15 @@ namespace HorsiApi.Controllers
                 _dbConnection.Dispose();
             }
             base.Dispose(disposing);
+        }
+
+        private string getConnectionString()
+        {
+            if (bool.Parse(_configuration["isProduction"]))
+            {
+                return _configuration.GetConnectionString("ProductionConnection");
+            }
+            return _configuration.GetConnectionString("LocalConnection");
         }
     }
 }
