@@ -54,17 +54,13 @@ namespace HorseApi.Controllers
             return BadRequest(response.Error);
         }
 
-        [HttpPost]
+        [HttpGet]
         [Authorize]
         [Route("checkToken")]
-        public IActionResult CheckToken([FromBody]CheckTokenBindingModel model)
+        public IActionResult CheckToken()
         {
-            if (!ModelState.IsValid || model == null)
-            {
-                return BadRequest(ModelState);
-            }
-            var response = _userService.CheckToken(model.token);
-
+            var token = this.HttpContext.Request.Headers["Authorization"].ToString().Split(" ")[1];
+            var response = _userService.CheckToken(token);
             if (response.OK)
             {
                 return Ok(response.ResponseData);

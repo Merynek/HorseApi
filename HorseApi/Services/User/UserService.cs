@@ -91,7 +91,8 @@ namespace HorseApi.Services
             }
             _response.SetResponseData(new
             {
-                username = user.username
+                username = user.username,
+                role = user.role
             });
 
             return _response;
@@ -104,6 +105,7 @@ namespace HorseApi.Services
                 {
                     username = model.username,
                     password = model.password,
+                    email = model.email,
                     role = "user"
                 });
         }
