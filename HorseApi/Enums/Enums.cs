@@ -6,10 +6,4 @@
         INVALID_PASSWORD = 2,
         INVALID_REFRESH_TOKEN = 3,
     }
-
-    public enum UserRole
-    {
-        ADMIN = 1,
-        USER = 2
-    }
 }

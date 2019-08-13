@@ -1,4 +1,6 @@
-﻿namespace HorseApi.Models
+﻿using HorseApi.Enums;
+
+namespace HorseApi.Models
 {
     public class User
     {
