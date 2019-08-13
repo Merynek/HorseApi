@@ -1,5 +1,4 @@
 ﻿using HorseApi.Models;
-using Microsoft.AspNetCore.Hosting;
 using SqlKata.Execution;
 
 namespace HorseApi.Services

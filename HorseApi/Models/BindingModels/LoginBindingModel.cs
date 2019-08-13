@@ -5,8 +5,8 @@ namespace HorsiApi.Models.BindingModels
     public class LoginBindingModel
     {
         [Required]
-        [Display(Name = "username")]
-        public string username { get; set; }
+        [Display(Name = "email")]
+        public string email { get; set; }
 
         [Required]
         [Display(Name = "password")]

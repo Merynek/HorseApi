@@ -1,4 +1,6 @@
-﻿namespace HorseApi.Models
+﻿using HorseApi.Enums;
+
+namespace HorseApi.Models
 {
     public class ResponseModel
     {
@@ -12,10 +14,10 @@
             this.ResponseData = data;
         }
 
-        public void SetError(int code, string message)
+        public void SetError(ReponseErrorType errorType)
         {
             this.OK = false;
-            this.Error = new Error(code, message);
+            this.Error = new Error(errorType);
         }
     }
 
@@ -24,10 +26,21 @@
         public int ErrorCode { get; set; }
         public string Message { get; set; }
 
-        public Error(int code, string message)
+        public Error(ReponseErrorType errorType)
         {
-            this.ErrorCode = code;
-            this.Message = message;
+            this.ErrorCode = (int)errorType;
+            this.Message = getErrorMessage(errorType);
+        }
+
+        private string getErrorMessage(ReponseErrorType errorType)
+        {
+            switch (errorType)
+            {
+                case ReponseErrorType.USER_NOT_FOUND: return "User not found";
+                case ReponseErrorType.INVALID_PASSWORD: return "Invalid password";
+                case ReponseErrorType.INVALID_REFRESH_TOKEN: return "Invalid refresh token";
+                default: return "Unknown error";
+            }
         }
     }
 }

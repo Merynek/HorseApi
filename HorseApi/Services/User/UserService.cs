@@ -1,10 +1,13 @@
-﻿using HorseApi.Models;
+﻿using HorseApi.Enums;
+using HorseApi.Models;
 using HorseApi.Models.BindingModels;
 using HorsiApi.Models.BindingModels;
 using SqlKata.Execution;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace HorseApi.Services
 {
@@ -19,32 +22,35 @@ namespace HorseApi.Services
 
         public ResponseModel Login(LoginBindingModel model)
         {
-            User user = _db.Query("Users").Where("username", model.username).First<User>();
+            User user = _db.Query("Users").Where("email", model.email).First<User>();
 
             if (user != null)
             {
-                var usersClaims = new[]
+                if (hashPassword(model.password) == user.password)
                 {
-                    new Claim("ID", user.ID.ToString()),
-                    new Claim(ClaimTypes.Name, user.username),
-                    new Claim(ClaimTypes.Role, user.role)
-                };
+                    var usersClaims = new[]
+                                    {
+                        new Claim("ID", user.ID.ToString()),
+                        new Claim(ClaimTypes.Email, user.email),
+                        new Claim(ClaimTypes.Name, user.username),
+                        new Claim(ClaimTypes.Role, user.role)
+                    };
 
-                var generatedToken = _tokenService.GenerateAccessToken(usersClaims, model.permanent);
-                var jwtToken = new JwtSecurityTokenHandler().WriteToken(generatedToken);
-                var refreshToken = _tokenService.GenerateRefreshToken();
+                    var generatedToken = _tokenService.GenerateAccessToken(usersClaims, model.permanent);
+                    var jwtToken = new JwtSecurityTokenHandler().WriteToken(generatedToken);
+                    var refreshToken = _tokenService.GenerateRefreshToken();
 
-                refreshTokenField(user.ID, refreshToken);
-                _response.SetResponseData(new
+                    refreshTokenField(user.ID, refreshToken);
+                    _response.SetResponseData(createTokenResponse(jwtToken, refreshToken, generatedToken));
+                }
+                else
                 {
-                    token = jwtToken,
-                    refreshToken = refreshToken,
-                    expire = getTokenExpireTime(generatedToken)
-                });
+                    _response.SetError(ReponseErrorType.INVALID_PASSWORD);
+                }
             }
             else
             {
-                _response.SetError(1, "Fail Login");
+                _response.SetError(ReponseErrorType.USER_NOT_FOUND);
             }
 
             return _response;
@@ -53,12 +59,12 @@ namespace HorseApi.Services
         public ResponseModel RefreshToken(RefreshTokenBindingModel model)
         {
             var principal = _tokenService.GetPrincipalFromExpiredToken(model.token);
-            var username = principal.Identity.Name; //this is mapped to the Name claim by default
+            var username = principal.Identity.Name;
 
             User user = _db.Query("Users").Where("username", username).First<User>();
             if (user == null || user.refreshToken != model.refreshToken)
             {
-                _response.SetError(2, "Fail refresh token");
+                _response.SetError(ReponseErrorType.INVALID_REFRESH_TOKEN);
                 return _response;
             }
 
@@ -67,13 +73,7 @@ namespace HorseApi.Services
             var refreshToken = _tokenService.GenerateRefreshToken();
 
             refreshTokenField(user.ID, refreshToken);
-
-            _response.SetResponseData(new
-            {
-                token = jwtToken,
-                refreshToken = refreshToken,
-                expire = getTokenExpireTime(generatedToken)
-            });
+            _response.SetResponseData(createTokenResponse(jwtToken, refreshToken, generatedToken));
 
             return _response;
         }
@@ -86,14 +86,11 @@ namespace HorseApi.Services
             User user = _db.Query("Users").Where("username", username).First<User>();
             if (user == null)
             {
-                _response.SetError(3, "Fail check token");
+                _response.SetError(ReponseErrorType.USER_NOT_FOUND);
                 return _response;
             }
-            _response.SetResponseData(new
-            {
-                username = user.username,
-                role = user.role
-            });
+            user.password = null;
+            _response.SetResponseData(user);
 
             return _response;
         }
@@ -104,10 +101,20 @@ namespace HorseApi.Services
                 new
                 {
                     username = model.username,
-                    password = model.password,
+                    password = hashPassword(model.password),
                     email = model.email,
                     role = "user"
                 });
+        }
+
+        private object createTokenResponse(string jwtToken, string refreshToken, JwtSecurityToken generatedToken)
+        {
+            return new
+            {
+                token = jwtToken,
+                refreshToken = refreshToken,
+                expire = getTokenExpireTime(generatedToken)
+            };
         }
 
         private void refreshTokenField(int userID, string refreshToken)
@@ -121,6 +128,22 @@ namespace HorseApi.Services
         private long getTokenExpireTime(JwtSecurityToken token)
         {
             return (long)(token.ValidTo - new DateTime(1970, 1, 1)).TotalMilliseconds;
+        }
+
+        private string hashPassword(string password)
+        {
+            using (SHA1Managed sha1 = new SHA1Managed())
+            {
+                var hash = sha1.ComputeHash(Encoding.UTF8.GetBytes(password));
+                var sb = new StringBuilder(hash.Length * 2);
+
+                foreach (byte b in hash)
+                {
+                    sb.Append(b.ToString("X2"));
+                }
+
+                return sb.ToString();
+            }
         }
     }
 }
