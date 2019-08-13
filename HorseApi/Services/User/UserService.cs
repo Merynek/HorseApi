@@ -103,7 +103,7 @@ namespace HorseApi.Services
                     username = model.username,
                     password = hashPassword(model.password),
                     email = model.email,
-                    role = "user"
+                    role = (int)UserRole.USER
                 });
         }
 
